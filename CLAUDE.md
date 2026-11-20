@@ -23,9 +23,13 @@ Do not "improve" these without asking the user.
    the net. (The old two-rail `LaneMover` design was deleted.)
 2. **The player controls one character only.** The teammate is a bot, so there is no
    character switching.
-3. **Ball:** shadow + landing marker always show where the ball comes down. The GDD
-   dropped "preset arcs, not a physics sim", so how the ball flies is **open — ask before
-   building it**.
+3. **Ball = real physics, hand-integrated** in `Ball.cs`: real physics size (Ø 0.21 m, 270 g, `physicsDiameter`) but drawn 2× bigger (Ø 0.42) for readability,
+   gravity 9.81 + quadratic air drag, dead-ish bounce on sand. Landing marker uses the same
+   step function, so it's exact. No spin/Magnus and no net collision yet.
+   **Pass (decided 2026-11-20):** Space is contextual. On the ground with the ball dropping
+   toward you, Space *holds to charge* (longer = higher pass) and the hit fires **on
+   release**, judged Perfect/Good/Miss by how far the release is from the ball reaching
+   forearm height. WASD at release aims the pass; no WASD = straight up. Otherwise Space jumps.
 4. **Placeholder art = Unity primitives.** Capsules for characters, cubes/planes for the
    court. Real art gets swapped in later.
 5. **3rd-person follow camera** behind the player, looking toward the net (+Z). It follows
@@ -35,8 +39,9 @@ Do not "improve" these without asking the user.
 
 ### Controls (planned)
 
-`WASD` move · `Space` jump (spike / block / jump serve) · `J` hit (serve, pass, set, spike —
-context by touch number and air state) · `K` dive / pancake.
+`WASD` move · `Space` pass when the ball is incoming (hold = height, player locked in
+place while charging), else jump (spike / block / jump serve) · `K` dive / pancake.
+There is no `J` key any more (removed from the GDD 2026-11-20).
 
 ---
 
@@ -80,9 +85,16 @@ Top-down view (the camera follows behind the player, looking toward +Z):
 - [Assets/Scripts/PlayerMovement.cs](Assets/Scripts/PlayerMovement.cs) — WASD 8-way movement
   with accel / slide-to-stop, Space jump (hand-rolled gravity), clamped to the player's half.
   All tuning values are Inspector fields.
+- [Assets/Scripts/Ball.cs](Assets/Scripts/Ball.cs) — ball flight (gravity + drag), sand
+  bounce, landing prediction → `LandingMarker`, respawn above the player 1 s after landing.
+- [Assets/Scripts/PlayerPass.cs](Assets/Scripts/PlayerPass.cs) — on Player. Space
+  hold-to-charge pass (locks the player in place while charging, `PlayerMovement` reads
+  `Charging`), timing grade within `reach` 1.5 m, OnGUI charge bar above the head
+  (green → yellow, red at full) + result text top-left.
 - [Assets/Scripts/CameraFollow.cs](Assets/Scripts/CameraFollow.cs) — on Main Camera. Keeps the
   scene's start offset to `target` and follows X/Z with `SmoothDamp`. Move the camera in the
-  scene to change the offset.
+  scene to change the offset. Also zooms FOV in while a pass charges (`chargeZoom`) and
+  kicks out past normal on release (`releaseKick`), scaled by the charge.
 - [Assets/Materials/](Assets/Materials/) — URP/Lit placeholder materials: `Beach`,
   `CourtSand`, `Net` (transparent), `Post`, `Player`, `Ball`.
 - `Assets/Settings/` — URP pipeline assets (PC + Mobile renderers), volume profiles.
@@ -100,8 +112,9 @@ Court
  ├─ CourtSand        (8×16 court plane)
  ├─ Net              (translucent dark cube, spans y 1.6–2.4, x ±4.3)
  ├─ NetPostL / NetPostR (x ±4.6, height 2.6)
-Player               (blue capsule at (0, 1, -6), PlayerMovement)
-Ball                 (yellow sphere Ø0.4 resting at (1.5, 0.2, -4), no logic yet)
+Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass)
+Ball                 (yellow sphere Ø0.42 visual, Ball → Player, LandingMarker)
+LandingMarker        (flat yellow disc, no collider, moved by Ball)
 ```
 
 ---
@@ -136,8 +149,9 @@ Built so far:
   ball resting on the sand.
 
 Next slices (rough order):
-1. **Timing-based ball** — flight model TBD, blob shadow + landing marker, J bump with
-   Perfect/Good/Miss.
+1. ✅ **Timing-based ball** — real-physics flight, landing marker, Space hold-to-charge
+   pass with Perfect/Good/Miss, charge bar, camera zoom (2026-11-20). Juggling is done.
+   Net collision and ball spin still to do.
 2. **Bot teammate** — covers the open half, sets after your pass, goes to the net to block.
 3. **Serve**, then **pass / set / spike** (3-touch rally).
 4. **Block, dig, dive & pancake.**

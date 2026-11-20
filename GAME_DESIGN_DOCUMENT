@@ -45,8 +45,7 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
 
 3.6. Controls (keyboard)
   - W A S D - Move
-  - Space - Jump (spike approach, block at the net, jump serve)
-  - J - Hit (serve release, pass, set, spike - action depends on the touch number and whether you are in the air)
+  - Space - Action, by context. On the ground with the ball dropping toward you = pass: hold to charge (longer hold = higher pass), release to hit, WASD at release aims (no direction = straight up), and the character stands still while charging. Otherwise = Jump (spike approach, block at the net, jump serve).
   - K - Dive / Pancake
 
 3.7. Opponents

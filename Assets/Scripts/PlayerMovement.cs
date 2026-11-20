@@ -12,10 +12,21 @@ public class PlayerMovement : MonoBehaviour
     public float minZ = -6f;
     public float maxZ = -0.5f;
 
+    /// <summary>True while the player stands on the sand.</summary>
+    public bool Grounded => transform.position.y <= groundY;
+
+    /// <summary>Normalized WASD direction this frame, world-relative (W = toward the net).</summary>
+    public Vector3 InputDir { get; private set; }
+
     Vector3 velocity;
     float groundY;
+    PlayerPass pass;
 
-    void Start() => groundY = transform.position.y;
+    void Start()
+    {
+        groundY = transform.position.y;
+        pass = GetComponent<PlayerPass>();
+    }
 
     void Update()
     {
@@ -28,19 +39,19 @@ public class PlayerMovement : MonoBehaviour
             if (kb.sKey.isPressed) input.z -= 1f;
             if (kb.dKey.isPressed) input.x += 1f;
             if (kb.aKey.isPressed) input.x -= 1f;
-            jump = kb.spaceKey.wasPressedThisFrame;
+            jump = kb.spaceKey.wasPressedThisFrame && !(pass && pass.BallIncoming());
         }
         input = input.normalized;
+        InputDir = input;
 
         float dt = Time.deltaTime;
         Vector3 planar = new Vector3(velocity.x, 0f, velocity.z);
         float rate = input == Vector3.zero ? deceleration : acceleration;
-        planar = Vector3.MoveTowards(planar, input * maxSpeed, rate * dt);
+        planar = pass && pass.Charging ? Vector3.zero : Vector3.MoveTowards(planar, input * maxSpeed, rate * dt);
         velocity.x = planar.x;
         velocity.z = planar.z;
 
-        bool grounded = transform.position.y <= groundY;
-        if (grounded && jump) velocity.y = Mathf.Sqrt(2f * gravity * jumpHeight);
+        if (Grounded && jump) velocity.y = Mathf.Sqrt(2f * gravity * jumpHeight);
         velocity.y -= gravity * dt;
 
         Vector3 p = transform.position + velocity * dt;
