@@ -1,4 +1,4 @@
-This is my indie game - Beach Volleyball. An isometric action volleyball game.
+Beach Volleyball.
 
 1. High-level concept.
 1.1. Working title - Beach Volleyball.
@@ -7,11 +7,10 @@ This is my indie game - Beach Volleyball. An isometric action volleyball game.
 1.4. Pillars
   - Fast and physical. Every rally is a short burst of running, jumping and diving.
   - Timing is the skill. Every touch (serve, pass, set, spike, block, pancake) is a timed press with a perfect window.
-  - Readable. The ball always shows where it will land, so a lost point is the player's mistake, not the game's.
 
 2. Product design.
 2.1. Player Experience
-Player controls their 2v2 team against computer bots in a beach volleyball tournament. They run around the sand with WASD, read the ball, and land timed jumping attacks, serves, digs and last-second pancake saves.
+Player controls only one player in the team of 2, against computer bots in a beach volleyball tournament. They run around the sand with WASD, read the ball, and land timed jumping attacks, serves, digs and last-second pancake saves.
 2.2. Visual and Audio style.
 Sunshine, Beach, Tropical Island. Punchy hit effects: sand bursts on dives, screen shake and a slow-motion beat on a perfect spike.
 
@@ -20,23 +19,17 @@ Sunshine, Beach, Tropical Island. Punchy hit effects: sand bursts on dives, scre
 Serve -> rally (up to 3 touches per side: pass, set, attack) -> point -> next serve. Match is first to 10 points, rally scoring (every rally gives a point). Winner advances on the tournament ladder.
 
 3.2. Court
-Isometric (perspective-tilt) view from behind the player's side. Each side is a 2x2 tile area (forward row near the net, back row near the baseline). Player side is closest to the camera, enemy side across the net. Tiles are a positioning guide only; characters move freely inside their own half.
+Camera follows the player from a 3rd-person view, behind and above, looking toward the net. Characters move freely inside their own half.
 
-3.3. Team control
-  - Player controls one character at a time: the "active" character, marked with a ring under their feet.
-  - Control auto-switches to the teammate best placed to play the incoming ball. A swap key lets the player switch manually.
-  - The inactive teammate is moved by simple AI: covers the open half of the court, gets under the ball for the set after a pass, goes to the net to block.
-
-3.4. Movement
+3.3. Movement
   - WASD = run in 8 directions inside your own half. Cannot cross the net.
   - Short acceleration and slide-to-stop on sand, so positioning early matters.
 
-3.5. The ball
-  - Arcade ball: each touch launches the ball on a clean preset arc (not a physics sim).
+3.4. The ball
   - A shadow and a landing marker on the sand always show where the ball will come down.
   - Ball touches the sand on your side = point to the opponent. Ball lands out of the court = point to the side that did not touch it last.
 
-3.6. Actions (all timing-based)
+3.5. Actions (all timing-based)
 Every action has a timing window: Perfect / Good / Miss. Perfect gives the best arc, speed and accuracy. Good gives a weaker, less accurate version. Miss means a whiff or a shank.
 
   - Serve - stand behind the baseline, hold the action key to toss and release at the top of the toss.
@@ -50,20 +43,14 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
   - Dive - when the ball lands out of reach, dive in the WASD direction to extend reach.
   - Pancake - the last-chance save. Dive and slap the hand flat on the sand just as the ball arrives, so the ball pops up off the back of the hand. Very tight timing window. A successful pancake gets a special effect and keeps the rally alive.
 
-3.7. Controls (keyboard)
+3.6. Controls (keyboard)
   - W A S D - Move
   - Space - Jump (spike approach, block at the net, jump serve)
   - J - Hit (serve release, pass, set, spike - action depends on the touch number and whether you are in the air)
   - K - Dive / Pancake
-  - Tab - Swap active character
 
-3.8. Opponents
+3.7. Opponents
 Computer bots use the same moves and timing windows as the player. Tournament opponents get harder by improving their timing accuracy, reaction speed and attack choice.
 
-3.9. Tournament
+3.8. Tournament
 A ladder of bot teams. Win a match to advance, lose and retry the match. Beat the final team to win the tournament.
-
-4. Open questions
-  - Team control: one active character with auto-switch (current choice) vs. the player steering both characters at once.
-  - Win condition: first to 10 flat, or first to 10 and win by 2.
-  - Gamepad support and key layout.

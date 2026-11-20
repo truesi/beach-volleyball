@@ -1,10 +1,10 @@
 # Beach Volleyball
 
-Indie game — an **isometric 2v2 action beach volleyball** prototype vs computer bots, in a
+Indie game — a **3rd-person 2v2 action beach volleyball** prototype vs computer bots, in a
 tropical tournament. WASD movement, timed jumping attacks, serves, defence and pancakes.
 
 Design doc: [GAME_DESIGN_DOCUMENT](GAME_DESIGN_DOCUMENT) (project root) — the source of truth
-for game design. Field sketch: [Assets/image.png](Assets/image.png).
+for game design.
 
 ---
 
@@ -19,23 +19,24 @@ for game design. Field sketch: [Assets/image.png](Assets/image.png).
 
 Do not "improve" these without asking the user.
 
-1. **Free WASD movement** inside your own half (8 directions). Replaces the old two-rail
-   lane design — `LaneMover.cs` and its W/S + ↑/↓ controls are now obsolete.
-2. **One active character at a time**, auto-switching to the teammate best placed for the
-   ball, with a manual swap key (Tab). The inactive teammate is AI-positioned.
-   (Still an open question in the GDD — confirm before building.)
-3. **Timing-based arcade ball.** Preset arcs, not a physics sim. Shadow + landing marker
-   always show where the ball comes down. (Not built yet.)
+1. **Free WASD movement** inside your own half (8 directions), world-relative: W = toward
+   the net. (The old two-rail `LaneMover` design was deleted.)
+2. **The player controls one character only.** The teammate is a bot, so there is no
+   character switching.
+3. **Ball:** shadow + landing marker always show where the ball comes down. The GDD
+   dropped "preset arcs, not a physics sim", so how the ball flies is **open — ask before
+   building it**.
 4. **Placeholder art = Unity primitives.** Capsules for characters, cubes/planes for the
    court. Real art gets swapped in later.
-5. **Perspective-tilt isometric camera** (not true orthographic).
+5. **3rd-person follow camera** behind the player, looking toward the net (+Z). It follows
+   the player's X/Z with smoothing and ignores jumps. It doesn't rotate, so W = toward the net = up on screen.
 6. **Scene is authored directly** in `SampleScene.unity` (the user chose this over a
    procedural builder). See conventions below for how to do that safely.
 
 ### Controls (planned)
 
 `WASD` move · `Space` jump (spike / block / jump serve) · `J` hit (serve, pass, set, spike —
-context by touch number and air state) · `K` dive / pancake · `Tab` swap character.
+context by touch number and air state) · `K` dive / pancake.
 
 ---
 
@@ -53,55 +54,54 @@ context by touch number and air state) · `K` dive / pancake · `Tab` swap chara
 
 ## 3. Court layout & coordinate system
 
-Top-down view (the camera looks in from the player's back-left corner):
+Top-down view (the camera follows behind the player, looking toward +Z):
 
 ```
-                ENEMY SIDE (z+, bots)
-     EB1(-1,+3)   EB2(+1,+3)    back row
-     EF1(-1,+1)   EF2(+1,+1)    forward row
-     ============ NET (z = 0) ============
-     PF1(-1,-1)   PF2(+1,-1)    forward row
-     PB1(-1,-3)   PB2(+1,-3)    back row   <- characters start here
-                PLAYER SIDE (z-, you)
-       lane 1         lane 2
+          z = +8  ── enemy baseline ──
+                 ENEMY SIDE (bots)
+          z =  0  ═══════ NET ═══════   (net x ±4.3, posts x ±4.6, top at y 2.4)
+                 PLAYER SIDE (you)       player starts at (0, 1, -6)
+          z = -8  ── your baseline ──
+               x = -4            x = +4
 ```
 
-- **Tile size:** 2 units. **Lanes (X):** lane 1 at `x = -1`, lane 2 at `x = +1`.
-- **Rows (Z):** back `±3`, forward `±1`. **Net** is at `z = 0`.
-- **Player side is negative Z; enemy side is positive Z.** "Forward" for a player means
-  moving toward the net (Z increasing toward 0).
-- Characters move freely in their own half (x within the court, z from the baseline to just
-  short of the net).
+- **Court:** real beach size, 8 wide × 16 long (8×8 per side), one `CourtSand` plane, no tiles.
+- **Player side is negative Z; enemy side is positive Z.** "Forward" = toward the net.
+- `PlayerMovement` clamps to `x ∈ [-6, 6]`, `z ∈ [-11, -0.5]`, so the player can run a little
+  outside the lines and behind the baseline to serve.
 
 ---
 
 ## 4. Project structure
 
 - [Assets/Scenes/SampleScene.unity](Assets/Scenes/SampleScene.unity) — the one scene.
-  Contains the camera, light, global volume, the **Court** parent (ground, 8 tiles, net
-  band, 2 posts) and the **Players** parent (Player1, Player2 capsules).
-- [Assets/Scripts/LaneMover.cs](Assets/Scripts/LaneMover.cs) — per-character lane movement.
-  Attached to both capsules; differs only by `playerIndex` (1 or 2).
-- [Assets/Materials/](Assets/Materials/) — URP/Lit placeholder materials: `SandLight`,
-  `SandDark`, `GroundSand`, `NetWhite`, `PostWood`, `Player1`, `Player2`.
+  Contains the camera, light, global volume, the **Court** parent (beach, court plane, net,
+  2 posts), the **Player** capsule and the **Ball**.
+- [Assets/Scripts/PlayerMovement.cs](Assets/Scripts/PlayerMovement.cs) — WASD 8-way movement
+  with accel / slide-to-stop, Space jump (hand-rolled gravity), clamped to the player's half.
+  All tuning values are Inspector fields.
+- [Assets/Scripts/CameraFollow.cs](Assets/Scripts/CameraFollow.cs) — on Main Camera. Keeps the
+  scene's start offset to `target` and follows X/Z with `SmoothDamp`. Move the camera in the
+  scene to change the offset.
+- [Assets/Materials/](Assets/Materials/) — URP/Lit placeholder materials: `Beach`,
+  `CourtSand`, `Net` (transparent), `Post`, `Player`, `Ball`.
 - `Assets/Settings/` — URP pipeline assets (PC + Mobile renderers), volume profiles.
-- `FirstScript.cs` — leftover empty template, unused. Safe to delete.
+- `Assets/InputSystem_Actions.inputactions` — Unity template asset, unused (scripts read
+  `Keyboard.current` directly).
 
 ### Hierarchy (current)
 
 ```
-Main Camera           (perspective tilt: pos ~(-9.27, 9.18, -9.27), euler (35, 45, 0), FOV 40)
+Main Camera           (pos (0, 7, -14), euler (25, 0, 0), FOV 50, CameraFollow → Player)
 Directional Light
 Global Volume
 Court
- ├─ Beach            (large sand plane)
- ├─ PB1 PB2 PF1 PF2  (player tiles, checkered SandLight/SandDark)
- ├─ EF1 EF2 EB1 EB2  (enemy tiles)
- ├─ NetBand
- ├─ NetPostL / NetPostR
-Players
- ├─ Player1          (blue capsule, lane 1, LaneMover playerIndex 1)
- └─ Player2          (orange capsule, lane 2, LaneMover playerIndex 2)
+ ├─ Beach            (200×200 sand plane)
+ ├─ CourtSand        (8×16 court plane)
+ ├─ Net              (translucent dark cube, spans y 1.6–2.4, x ±4.3)
+ ├─ NetPostL / NetPostR (x ±4.6, height 2.6)
+Player               (blue capsule at (0, 1, -6), PlayerMovement)
+Ball                 (yellow sphere Ø0.4 resting at (1.5, 0.2, -4), no logic yet)
 ```
 
 ---
@@ -132,14 +132,15 @@ The scene is hand-authored YAML, so be careful:
 ## 6. Roadmap
 
 Built so far:
-- ✅ Isometric court + camera (visual foundation).
-- ⚠️ Two-rail lane movement (`LaneMover`) — obsolete after the revamp, to be replaced.
+- ✅ Slice 1 (rebuilt from scratch 2026-11-20): court, net, one player with WASD + jump,
+  ball resting on the sand.
 
 Next slices (rough order):
-1. **WASD movement + active-character switching** — replaces `LaneMover`.
-2. **Timing-based ball** — preset arcs, shadow + landing marker, Perfect/Good/Miss hits.
+1. **Timing-based ball** — flight model TBD, blob shadow + landing marker, J bump with
+   Perfect/Good/Miss.
+2. **Bot teammate** — covers the open half, sets after your pass, goes to the net to block.
 3. **Serve**, then **pass / set / spike** (3-touch rally).
-4. **Jump, block, dig, dive & pancake.**
+4. **Block, dig, dive & pancake.**
 5. **Enemy bot AI** — same moves and timing windows as the player.
 6. **Scoring** — rally scoring, first to 10 wins the match.
 7. **Tournament ladder** — advance through bot opponents.
