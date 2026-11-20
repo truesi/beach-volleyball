@@ -21,6 +21,9 @@ public class Ball : MonoBehaviour
     /// <summary>Who touched the ball last, or null for a fresh ball.</summary>
     public Transform LastTouch { get; private set; }
 
+    /// <summary>Touches in a row by the side that touched last (1 to 3), or 0 for a fresh ball.</summary>
+    public int Touches { get; private set; }
+
     float radius;
 
     void Start()
@@ -33,6 +36,7 @@ public class Ball : MonoBehaviour
     public void Hit(Vector3 velocity, Transform by)
     {
         Velocity = velocity;
+        Touches = LastTouch && (LastTouch.position.z > 0f) == (by.position.z > 0f) ? Touches + 1 : 1;
         LastTouch = by;
     }
 
@@ -109,10 +113,25 @@ public class Ball : MonoBehaviour
         return new Vector3(p.x, 0f, p.z);
     }
 
+    /// <summary>Where the ball will be when it next drops to <paramref name="height"/>, and <paramref name="time"/> in seconds until then. A ball that never gets that high returns its apex.</summary>
+    public Vector3 PredictFall(float height, out float time)
+    {
+        Vector3 p = transform.position;
+        Vector3 v = Velocity;
+        time = 0f;
+        for (int i = 0; i < 500 && (v.y > 0f || p.y > height); i++)
+        {
+            Step(ref p, ref v, 0.02f);
+            time += 0.02f;
+        }
+        return p;
+    }
+
     void Respawn()
     {
         Dead = false;
         LastTouch = null;
+        Touches = 0;
         Vector2 r = Random.insideUnitCircle * dropSpread;
         transform.position = new Vector3(player.position.x + r.x, dropHeight, player.position.z + r.y);
         Velocity = Vector3.zero;

@@ -20,6 +20,7 @@ public class PlayerSpike : MonoBehaviour
 
     PlayerMovement movement;
     PlayerPass pass;
+    PlayerBlock block;
     float chargeStart = -1f;
     bool swung;
 
@@ -30,6 +31,7 @@ public class PlayerSpike : MonoBehaviour
     {
         movement = GetComponent<PlayerMovement>();
         pass = GetComponent<PlayerPass>();
+        block = GetComponent<PlayerBlock>();
     }
 
     void Update()
@@ -46,7 +48,7 @@ public class PlayerSpike : MonoBehaviour
                 chargeStart = -1f;
             }
         }
-        if (mouse != null && mouse.leftButton.wasPressedThisFrame && !movement.Grounded && !swung)
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame && !movement.Grounded && !swung && !block.Blocking)
         {
             swung = true;
             Swing();

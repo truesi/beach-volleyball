@@ -23,11 +23,13 @@ public class PlayerMovement : MonoBehaviour
     Vector3 velocity;
     float groundY;
     PlayerPass pass;
+    PlayerBlock block;
 
     void Start()
     {
         groundY = transform.position.y;
         pass = GetComponent<PlayerPass>();
+        block = GetComponent<PlayerBlock>();
     }
 
     void Update()
@@ -47,7 +49,7 @@ public class PlayerMovement : MonoBehaviour
         float dt = Time.deltaTime;
         Vector3 planar = new Vector3(velocity.x, 0f, velocity.z);
         float rate = input == Vector3.zero ? deceleration : acceleration;
-        planar = pass && pass.Charging ? Vector3.zero : Vector3.MoveTowards(planar, input * maxSpeed, rate * dt);
+        planar = pass && pass.Charging || block && block.Blocking ? Vector3.zero : Vector3.MoveTowards(planar, input * maxSpeed, rate * dt);
         velocity.x = planar.x;
         velocity.z = planar.z;
 

@@ -89,28 +89,42 @@ Top-down view (the camera follows behind the player, looking toward +Z):
   clamped to the player's half. All tuning values are Inspector fields.
 - [Assets/Scripts/Ball.cs](Assets/Scripts/Ball.cs) — ball flight (gravity + drag), sand
   bounce, landing prediction → `LandingMarker`, respawn above the player 1 s after landing.
+  `Touches` counts touches in a row by the side that touched last (side = sign of the toucher's z),
+  `PredictFall(height)` gives where/when the ball next drops to a height (bots use it to time jumps).
 - [Assets/Scripts/PlayerPass.cs](Assets/Scripts/PlayerPass.cs) — on Player. Space
   hold-to-charge pass (locks the player in place while charging, `PlayerMovement` reads
   `Charging`), timing grade within `reach` 1.5 m, OnGUI charge bar above the head
   (green → yellow, red at full) + result text top-left. `PassContext()` = standing still +
-  ball incoming; otherwise Space belongs to `PlayerSpike`.
+  ball incoming (landing on our side); otherwise Space belongs to `PlayerSpike`.
 - [Assets/Scripts/PlayerSpike.cs](Assets/Scripts/PlayerSpike.cs) — on Player. Space
   hold-to-charge jump (keeps running, height `minJumpHeight`..`maxJumpHeight`), one left-click
   swing per jump graded by the pass's windows vs the ball crossing the hand (`handHeight`),
   Perfect/Good = spike fired straight at one of 9 WASD targets, late Miss = soft tip to the
   short row, early Miss / out of `reach` = whiff. Reuses `PlayerPass` charge bar + result text.
+- [Assets/Scripts/PlayerBlock.cs](Assets/Scripts/PlayerBlock.cs) — on Player. A jump that takes off
+  within `netRange` of the net while the enemies touched last is a block (`Blocking`): `PlayerMovement`
+  drops air drift, `PlayerSpike` ignores left click, A/D shift the hands hitbox by `sideShift`. Ball
+  inside the hitbox (moving toward us) is graded by time from the jump peak with the pass windows:
+  Perfect = stuff down into the enemy court, Good = deflect up on our side, Miss = tip, slowed.
+  Shows the hitbox with the `BlockHitbox` cube while blocking.
 - [Assets/Scripts/TeammateBot.cs](Assets/Scripts/TeammateBot.cs) — on Teammate. Runs to the
   landing marker on its turn (`Ball.TurnOf`: no double touch, fresh ball → closer one), at
   contact height sets (after the player's touch: `setHeight` to `setNetGap` off the net, in line
   with the player) or passes to the player (fresh ball), with Perfect/Good/Miss odds, else walks
   to `home`. Borrows
   speed/limits from the player's `PlayerMovement` and penalties/reach from `PlayerPass`.
+- [Assets/Scripts/EnemyBot.cs](Assets/Scripts/EnemyBot.cs) — on EnemyA / EnemyB. Mirror of our
+  team on the +Z side (GDD 3.8): dig to partner (fresh ball, closer bot), set near the net
+  (`Ball.Touches` = 1, aimed so the set *peaks* `setNetGap` off the net), spike (`Ball.Touches` = 2) by jumping so the hand peaks `apexMargin` under the
+  set's apex, aimed at the open-sand target farthest from player + teammate. Perfect/Good/Miss odds,
+  walks to `home` off the ball. Borrows speed/jump/limits from `PlayerMovement`, spike tuning from
+  `PlayerSpike`, penalties/reach from `PlayerPass`. Results drawn at `labelY`.
 - [Assets/Scripts/CameraFollow.cs](Assets/Scripts/CameraFollow.cs) — on Main Camera. Keeps the
   scene's start offset to `target` and follows X/Z with `SmoothDamp`. Move the camera in the
   scene to change the offset. Also zooms FOV in while a pass or jump charges (`chargeZoom`) and
   kicks out past normal on release (`releaseKick`), scaled by the charge.
 - [Assets/Materials/](Assets/Materials/) — URP/Lit placeholder materials: `Beach`,
-  `CourtSand`, `Net` (transparent), `Post`, `Player`, `Teammate`, `Ball`.
+  `CourtSand`, `Net` (transparent), `Post`, `Player`, `Teammate`, `Enemy`, `Ball`.
 - `Assets/Settings/` — URP pipeline assets (PC + Mobile renderers), volume profiles.
 - `Assets/InputSystem_Actions.inputactions` — Unity template asset, unused (scripts read
   `Keyboard.current` directly).
@@ -126,10 +140,12 @@ Court
  ├─ CourtSand        (8×16 court plane)
  ├─ Net              (translucent dark cube, spans y 2.0–3.0, x ±5.4)
  ├─ NetPostL / NetPostR (x ±5.7, height 3.2)
-Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass → Teammate, PlayerSpike → Ball)
+Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass → Teammate, PlayerSpike → Ball, PlayerBlock → Ball, BlockHitbox)
 Teammate             (red capsule at (2, 1, -4), TeammateBot → Ball, Player)
+EnemyA / EnemyB      (purple capsules at (∓2, 1, 4), EnemyBot → Ball, each other, Player's PlayerSpike)
 Ball                 (yellow sphere Ø0.42 visual, Ball → Player, LandingMarker)
 LandingMarker        (flat yellow disc, no collider, moved by Ball)
+BlockHitbox          (translucent cube, Net material, no collider, shown/moved by PlayerBlock)
 ```
 
 ---
@@ -175,8 +191,9 @@ Next slices (rough order):
    left-click hit graded vs ball crossing the hand, 9-target WASD aim, teammate sets after your
    pass. Net collision deliberately deferred (low spikes pass through the net for now).
 4. **Serve**, then the full 3-touch rally.
-5. **Block, dig, dive & pancake.**
-6. **Enemy bot AI** — same moves and timing windows as the player.
+5. 🟡 **Block** built 2026-11-20 (GDD 3.5), needs a feel check. Dig, dive & pancake still to do.
+6. 🟡 **Enemy bot AI** — built 2026-11-20 (GDD 3.8): two bots play dig → set → spike at the open
+   sand, needs a feel check. Later: block, serve, difficulty per tournament opponent.
 7. **Scoring** — rally scoring, first to 10 wins the match.
 8. **Tournament ladder** — advance through bot opponents.
 9. **Art pass** — swap primitives for real models/sprites and tropical-beach styling.

@@ -41,7 +41,7 @@ public class PlayerPass : MonoBehaviour
     {
         Vector3 d = ball.LandingPoint - transform.position;
         d.y = 0f;
-        return !ball.Dead && ball.Velocity.y < 0f && d.magnitude <= incomingRadius && ball.TurnOf(transform, teammate);
+        return !ball.Dead && ball.LandingPoint.z < 0f && ball.Velocity.y < 0f && d.magnitude <= incomingRadius && ball.TurnOf(transform, teammate);
     }
 
     /// <summary>True when Space should charge a pass: standing still on the sand with the ball dropping toward you. Otherwise Space charges a jump.</summary>

@@ -45,7 +45,15 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
         Late Miss = soft tip over the net. Early Miss or ball out of reach = whiff.
       Jump timing matters by itself: the ball is hit wherever the hand is at the click. Taking off too early means falling, so the contact is lower and the spike flatter (net top is 3.0 m, raised above real height to suit the arcade jumps; hand at the top of a full jump is about 4.3 m). Best spike = full charge, on-time take-off, click at the top of the jump.
       Aim: WASD held at the click picks one of 9 targets on the enemy court. W = deep (near the baseline), S = short (just past the net), A / D = left / right sideline, diagonals = corners, no key = middle of the court. The spike is fired at the target, and gravity and drag act on it in flight. The landing marker shows where it really lands.
-  - Block - jump at the net as the enemy hitter attacks. Perfect = stuff block straight down for a point. Good = deflection back up on your side.
+  - Block - jump at the net as the enemy hitter attacks.
+      Same Space jump as the spike: hold to charge, longer hold = higher jump, release to take off. It is a block jump when you take off within about 1.5 m of the net while the enemies have the ball (their touch was last). Otherwise it is the normal spike jump.
+      In a block jump the body goes straight up (no air drift). The hands are a hitbox about 1 m wide and 1 m tall above the shoulders. No direction key = centered on the player; holding A or D slides it about 0.5 m left or right. Left click does nothing in a block jump.
+      Jump height decides which spikes you can reach, so read the hitter: a deep spike crosses the net high, a short one low.
+      The block is graded by how close to the top of your jump the ball hits the hands (same Perfect / Good windows as the pass):
+        Perfect = stuff block, the ball is driven down into the enemy court.
+        Good = soft deflection up on your side; the teammate then sets it for you.
+        Miss = the ball tips off the hands and keeps going, slowed.
+      A block touch counts as your side's first touch (beach rules).
   - Defence / Dig - receive a hard spike with a timed bump. Harder to time than a normal pass.
   - Dive - when the ball lands out of reach, dive in the WASD direction to extend reach.
   - Pancake - the last-chance save. Dive and slap the hand flat on the sand just as the ball arrives, so the ball pops up off the back of the hand. Very tight timing window. A successful pancake gets a special effect and keeps the rally alive.
@@ -68,6 +76,14 @@ The player's partner is a bot. Its first job is passing the ball back and forth 
 
 3.8. Opponents
 Computer bots use the same moves and timing windows as the player. Tournament opponents get harder by improving their timing accuracy, reaction speed and attack choice.
+  - Two enemy bots play the full 3-touch rally on their side, mirroring our team.
+      Dig (touch 1): when the ball comes over, the bot closer to the landing marker runs there and passes it to its partner.
+      Set (touch 2): the partner sets a high ball that peaks about 1 m from the net, in line with the digger.
+      Spike (touch 3): the digger runs under the set, jumps so its hand peaks just under the ball's apex (as high as the player's full jump allows), and spikes when the ball drops to the hand.
+  - Attack choice: the spike goes at the "open sand", the one of the player's 9 targets farthest from both the player and the teammate. Same speed, spread and tip as the player's spike.
+  - Skill: each touch rolls Perfect / Good / Miss with set odds (default 70 / 25 / 5). Good = weaker and less accurate. Miss = shank on a dig or set, tip over the net on a spike. A ball out of reach is a whiff.
+  - Off the ball, each bot walks back to its home spot (tunable).
+  - Rally start: for now the ball still drops above the player (no serve yet).
 
 3.9. Tournament
 A ladder of bot teams. Win a match to advance, lose and retry the match. Beat the final team to win the tournament.
