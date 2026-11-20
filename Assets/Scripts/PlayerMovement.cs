@@ -6,7 +6,6 @@ public class PlayerMovement : MonoBehaviour
     public float maxSpeed = 6f;
     public float acceleration = 40f;
     public float deceleration = 12f;
-    public float jumpHeight = 1.2f;
     public float gravity = 30f;
     public float xLimit = 3f;
     public float minZ = -6f;
@@ -17,6 +16,9 @@ public class PlayerMovement : MonoBehaviour
 
     /// <summary>Normalized WASD direction this frame, world-relative (W = toward the net).</summary>
     public Vector3 InputDir { get; private set; }
+
+    /// <summary>Current velocity, including the vertical jump speed.</summary>
+    public Vector3 Velocity => velocity;
 
     Vector3 velocity;
     float groundY;
@@ -32,14 +34,12 @@ public class PlayerMovement : MonoBehaviour
     {
         Keyboard kb = Keyboard.current;
         Vector3 input = Vector3.zero;
-        bool jump = false;
         if (kb != null)
         {
             if (kb.wKey.isPressed) input.z += 1f;
             if (kb.sKey.isPressed) input.z -= 1f;
             if (kb.dKey.isPressed) input.x += 1f;
             if (kb.aKey.isPressed) input.x -= 1f;
-            jump = kb.spaceKey.wasPressedThisFrame && !(pass && pass.BallIncoming());
         }
         input = input.normalized;
         InputDir = input;
@@ -51,7 +51,6 @@ public class PlayerMovement : MonoBehaviour
         velocity.x = planar.x;
         velocity.z = planar.z;
 
-        if (Grounded && jump) velocity.y = Mathf.Sqrt(2f * gravity * jumpHeight);
         velocity.y -= gravity * dt;
 
         Vector3 p = transform.position + velocity * dt;
@@ -67,5 +66,11 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = 0f;
         }
         transform.position = p;
+    }
+
+    /// <summary>Takes off from the sand so the jump peaks <paramref name="height"/> above the ground; ignored in the air.</summary>
+    public void Jump(float height)
+    {
+        if (Grounded) velocity.y = Mathf.Sqrt(2f * gravity * height);
     }
 }

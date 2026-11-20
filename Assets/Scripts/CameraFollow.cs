@@ -13,6 +13,7 @@ public class CameraFollow : MonoBehaviour
     Vector3 velocity;
     Camera cam;
     PlayerPass pass;
+    PlayerSpike spike;
     float baseFov;
     float fovVelocity;
     float lastCharge;
@@ -23,6 +24,7 @@ public class CameraFollow : MonoBehaviour
         offset = transform.position - target.position;
         cam = GetComponent<Camera>();
         pass = target.GetComponent<PlayerPass>();
+        spike = target.GetComponent<PlayerSpike>();
         baseFov = cam.fieldOfView;
     }
 
@@ -32,7 +34,7 @@ public class CameraFollow : MonoBehaviour
         goal.y = transform.position.y;
         transform.position = Vector3.SmoothDamp(transform.position, goal, ref velocity, smoothTime);
 
-        float charge = pass ? pass.Charge01 : 0f;
+        float charge = Mathf.Max(pass ? pass.Charge01 : 0f, spike ? spike.Charge01 : 0f);
         if (lastCharge > 0f && charge == 0f) kick = releaseKick * lastCharge;
         lastCharge = charge;
         kick = Mathf.MoveTowards(kick, 0f, releaseKick / kickReturnTime * Time.deltaTime);

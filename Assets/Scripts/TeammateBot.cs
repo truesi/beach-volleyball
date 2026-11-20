@@ -7,6 +7,8 @@ public class TeammateBot : MonoBehaviour
     public Vector3 home = new Vector3(2f, 1f, -4f);
     public float contactDrop = 0.25f;
     public float passHeight = 4f;
+    public float setHeight = 5f;
+    public float setNetGap = 1f;
     [Range(0f, 1f)] public float perfectOdds = 0.7f;
     [Range(0f, 1f)] public float goodOdds = 0.25f;
 
@@ -43,14 +45,17 @@ public class TeammateBot : MonoBehaviour
         toBall.y = 0f;
         if (toBall.magnitude > partner.reach) return;
 
+        bool set = ball.LastTouch == partner.transform;
+        string touch = set ? " set" : " pass";
         float roll = Random.value, power = 1f, spread = 0f;
-        if (roll < perfectOdds) Show("Perfect");
-        else if (roll < perfectOdds + goodOdds) { Show("Good"); power = partner.goodPower; spread = partner.goodSpread; }
-        else { Show("Miss (shank)"); power = partner.shankPower; spread = partner.shankSpread; }
+        if (roll < perfectOdds) Show("Perfect" + touch);
+        else if (roll < perfectOdds + goodOdds) { Show("Good" + touch); power = partner.goodPower; spread = partner.goodSpread; }
+        else { Show("Miss (shank)" + touch); power = partner.shankPower; spread = partner.shankSpread; }
 
-        Vector3 toMate = partner.transform.position - transform.position;
-        toMate.y = 0f;
-        ball.Pass(transform, toMate.normalized, toMate.magnitude, passHeight * power, spread);
+        Vector3 to = set ? new Vector3(partner.transform.position.x, 0f, -setNetGap) : partner.transform.position;
+        to -= transform.position;
+        to.y = 0f;
+        ball.Pass(transform, to.normalized, to.magnitude, (set ? setHeight : passHeight) * power, spread);
     }
 
     void Show(string text)

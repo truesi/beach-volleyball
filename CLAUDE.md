@@ -39,8 +39,10 @@ Do not "improve" these without asking the user.
 
 ### Controls (planned)
 
-`WASD` move · `Space` pass when the ball is incoming (hold = height, player locked in
-place while charging), else jump (spike / block / jump serve) · `K` dive / pancake.
+`WASD` move · `Space` pass when standing still with the ball incoming (hold = height, player
+locked in place while charging), else hold-to-charge jump, release to take off, keeps running
+(spike / block / jump serve) · `Left click` spike in the air, WASD at click picks 1 of 9 targets
+on the enemy court (GDD 3.5) · `K` dive / pancake.
 There is no `J` key any more (removed from the GDD 2026-11-20).
 
 ---
@@ -64,7 +66,7 @@ Top-down view (the camera follows behind the player, looking toward +Z):
 ```
           z = +8  ── enemy baseline ──
                  ENEMY SIDE (bots)
-          z =  0  ═══════ NET ═══════   (net x ±4.3, posts x ±4.6, top at y 2.4)
+          z =  0  ═══════ NET ═══════   (net x ±5.4, posts x ±5.7, top at y 3.0)
                  PLAYER SIDE (you)       player starts at (0, 1, -6)
           z = -8  ── your baseline ──
                x = -4            x = +4
@@ -83,21 +85,29 @@ Top-down view (the camera follows behind the player, looking toward +Z):
   Contains the camera, light, global volume, the **Court** parent (beach, court plane, net,
   2 posts), the **Player** capsule and the **Ball**.
 - [Assets/Scripts/PlayerMovement.cs](Assets/Scripts/PlayerMovement.cs) — WASD 8-way movement
-  with accel / slide-to-stop, Space jump (hand-rolled gravity), clamped to the player's half.
-  All tuning values are Inspector fields.
+  with accel / slide-to-stop, `Jump(height)` with hand-rolled gravity (called by `PlayerSpike`),
+  clamped to the player's half. All tuning values are Inspector fields.
 - [Assets/Scripts/Ball.cs](Assets/Scripts/Ball.cs) — ball flight (gravity + drag), sand
   bounce, landing prediction → `LandingMarker`, respawn above the player 1 s after landing.
 - [Assets/Scripts/PlayerPass.cs](Assets/Scripts/PlayerPass.cs) — on Player. Space
   hold-to-charge pass (locks the player in place while charging, `PlayerMovement` reads
   `Charging`), timing grade within `reach` 1.5 m, OnGUI charge bar above the head
-  (green → yellow, red at full) + result text top-left.
+  (green → yellow, red at full) + result text top-left. `PassContext()` = standing still +
+  ball incoming; otherwise Space belongs to `PlayerSpike`.
+- [Assets/Scripts/PlayerSpike.cs](Assets/Scripts/PlayerSpike.cs) — on Player. Space
+  hold-to-charge jump (keeps running, height `minJumpHeight`..`maxJumpHeight`), one left-click
+  swing per jump graded by the pass's windows vs the ball crossing the hand (`handHeight`),
+  Perfect/Good = spike fired straight at one of 9 WASD targets, late Miss = soft tip to the
+  short row, early Miss / out of `reach` = whiff. Reuses `PlayerPass` charge bar + result text.
 - [Assets/Scripts/TeammateBot.cs](Assets/Scripts/TeammateBot.cs) — on Teammate. Runs to the
-  landing marker on its turn (`Ball.TurnOf`: no double touch, fresh ball → closer one), passes
-  to the player at contact height with Perfect/Good/Miss odds, else walks to `home`. Borrows
+  landing marker on its turn (`Ball.TurnOf`: no double touch, fresh ball → closer one), at
+  contact height sets (after the player's touch: `setHeight` to `setNetGap` off the net, in line
+  with the player) or passes to the player (fresh ball), with Perfect/Good/Miss odds, else walks
+  to `home`. Borrows
   speed/limits from the player's `PlayerMovement` and penalties/reach from `PlayerPass`.
 - [Assets/Scripts/CameraFollow.cs](Assets/Scripts/CameraFollow.cs) — on Main Camera. Keeps the
   scene's start offset to `target` and follows X/Z with `SmoothDamp`. Move the camera in the
-  scene to change the offset. Also zooms FOV in while a pass charges (`chargeZoom`) and
+  scene to change the offset. Also zooms FOV in while a pass or jump charges (`chargeZoom`) and
   kicks out past normal on release (`releaseKick`), scaled by the charge.
 - [Assets/Materials/](Assets/Materials/) — URP/Lit placeholder materials: `Beach`,
   `CourtSand`, `Net` (transparent), `Post`, `Player`, `Teammate`, `Ball`.
@@ -114,9 +124,9 @@ Global Volume
 Court
  ├─ Beach            (200×200 sand plane)
  ├─ CourtSand        (8×16 court plane)
- ├─ Net              (translucent dark cube, spans y 1.6–2.4, x ±4.3)
- ├─ NetPostL / NetPostR (x ±4.6, height 2.6)
-Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass → Teammate)
+ ├─ Net              (translucent dark cube, spans y 2.0–3.0, x ±5.4)
+ ├─ NetPostL / NetPostR (x ±5.7, height 3.2)
+Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass → Teammate, PlayerSpike → Ball)
 Teammate             (red capsule at (2, 1, -4), TeammateBot → Ball, Player)
 Ball                 (yellow sphere Ø0.42 visual, Ball → Player, LandingMarker)
 LandingMarker        (flat yellow disc, no collider, moved by Ball)
@@ -161,12 +171,15 @@ Next slices (rough order):
    (no double touch), run to the landing marker, pass back to the player with Perfect/Good/Miss
    odds, idle at a fixed home spot. The player's pass soft-assists toward the teammate within ~45°.
    Later: sets after your pass, goes to the net to block.
-3. **Serve**, then **pass / set / spike** (3-touch rally).
-4. **Block, dig, dive & pancake.**
-5. **Enemy bot AI** — same moves and timing windows as the player.
-6. **Scoring** — rally scoring, first to 10 wins the match.
-7. **Tournament ladder** — advance through bot opponents.
-8. **Art pass** — swap primitives for real models/sprites and tropical-beach styling.
+3. 🟡 **Jump attack** — built 2026-11-20, needs a feel check; designed 2026-11-20 (GDD 3.5 / 3.6 / 3.7): charge jump while running,
+   left-click hit graded vs ball crossing the hand, 9-target WASD aim, teammate sets after your
+   pass. Net collision deliberately deferred (low spikes pass through the net for now).
+4. **Serve**, then the full 3-touch rally.
+5. **Block, dig, dive & pancake.**
+6. **Enemy bot AI** — same moves and timing windows as the player.
+7. **Scoring** — rally scoring, first to 10 wins the match.
+8. **Tournament ladder** — advance through bot opponents.
+9. **Art pass** — swap primitives for real models/sprites and tropical-beach styling.
 
 ---
 

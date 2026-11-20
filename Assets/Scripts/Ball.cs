@@ -41,9 +41,14 @@ public class Ball : MonoBehaviour
     {
         float g = -Physics.gravity.y;
         float vy = Mathf.Sqrt(2f * g * height);
-        Vector3 v = dir * (distance / (2f * vy / g)) + Vector3.up * vy;
+        Hit(Tilt(dir * (distance / (2f * vy / g)) + Vector3.up * vy, spread), by);
+    }
+
+    /// <summary>Tilts <paramref name="v"/> in a random direction by up to <paramref name="spread"/> degrees.</summary>
+    public static Vector3 Tilt(Vector3 v, float spread)
+    {
         Vector3 axis = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f) * Vector3.right;
-        Hit(Quaternion.AngleAxis(Random.Range(0f, spread), axis) * v, by);
+        return Quaternion.AngleAxis(Random.Range(0f, spread), axis) * v;
     }
 
     /// <summary>True when <paramref name="who"/> plays the ball next: no double touches, and a fresh ball goes to whoever is closer to the landing point.</summary>

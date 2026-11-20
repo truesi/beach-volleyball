@@ -44,11 +44,14 @@ public class PlayerPass : MonoBehaviour
         return !ball.Dead && ball.Velocity.y < 0f && d.magnitude <= incomingRadius && ball.TurnOf(transform, teammate);
     }
 
+    /// <summary>True when Space should charge a pass: standing still on the sand with the ball dropping toward you. Otherwise Space charges a jump.</summary>
+    public bool PassContext() => movement.Grounded && movement.InputDir == Vector3.zero && BallIncoming();
+
     void Update()
     {
         Keyboard kb = Keyboard.current;
         if (kb == null) return;
-        if (kb.spaceKey.wasPressedThisFrame && movement.Grounded && BallIncoming()) chargeStart = Time.time;
+        if (kb.spaceKey.wasPressedThisFrame && PassContext()) chargeStart = Time.time;
         if (chargeStart >= 0f && kb.spaceKey.wasReleasedThisFrame)
         {
             float charge = Charge01;
@@ -87,7 +90,8 @@ public class PlayerPass : MonoBehaviour
         ball.Pass(transform, dir, distance, Mathf.Lerp(minPassHeight, maxPassHeight, charge) * power, spread);
     }
 
-    void Show(string text)
+    /// <summary>Shows <paramref name="text"/> as the touch result in the top-left corner for 1.5 s.</summary>
+    public void Show(string text)
     {
         result = text;
         resultUntil = Time.time + 1.5f;
@@ -100,7 +104,8 @@ public class PlayerPass : MonoBehaviour
         if (Time.time < resultUntil) GUI.Label(new Rect(20, 20, 600, 40), result);
     }
 
-    void DrawChargeBar(float charge)
+    /// <summary>Draws a charge bar above the player's head, filled to <paramref name="charge"/> (0 to 1).</summary>
+    public void DrawChargeBar(float charge)
     {
         Vector3 s = Camera.main.WorldToScreenPoint(transform.position + Vector3.up * chargeBarHeight);
         if (s.z < 0f) return;

@@ -37,7 +37,14 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
       Jump serve (jump + release at peak): fast and hard, but a bad release goes into the net or out.
   - Pass / Bump (first touch) - stand under the ball and press as it drops. Sends the ball up to your teammate for a set.
   - Set (second touch) - press under the ball to put up a high, hittable ball near the net.
-  - Jumping attack / Spike (third touch) - jump toward a set ball and press at the top of the jump. WASD direction at the hit aims the spike (line / cross / short). Perfect timing = hard spike, late timing = soft tip.
+  - Jumping attack / Spike (third touch) - a two-step timing skill.
+      Approach and jump: while running (WASD held), hold Space to charge the jump. The player keeps running while charging. Release Space to take off; a longer hold gives a higher jump (about 0.6 m for a tap, 1.8 m at full charge). The same charge bar as the pass shows the charge.
+      Hit: left mouse click in the air swings at the ball. The hand is about 0.5 m above the head. The click is graded by how far it is in time from the ball crossing the hand, using the same Perfect / Good / Miss windows as the pass.
+        Perfect = full-speed spike (about 20-25 m/s), straight to the target.
+        Good = about 70% speed and a little spread.
+        Late Miss = soft tip over the net. Early Miss or ball out of reach = whiff.
+      Jump timing matters by itself: the ball is hit wherever the hand is at the click. Taking off too early means falling, so the contact is lower and the spike flatter (net top is 3.0 m, raised above real height to suit the arcade jumps; hand at the top of a full jump is about 4.3 m). Best spike = full charge, on-time take-off, click at the top of the jump.
+      Aim: WASD held at the click picks one of 9 targets on the enemy court. W = deep (near the baseline), S = short (just past the net), A / D = left / right sideline, diagonals = corners, no key = middle of the court. The spike is fired at the target, and gravity and drag act on it in flight. The landing marker shows where it really lands.
   - Block - jump at the net as the enemy hitter attacks. Perfect = stuff block straight down for a point. Good = deflection back up on your side.
   - Defence / Dig - receive a hard spike with a timed bump. Harder to time than a normal pass.
   - Dive - when the ball lands out of reach, dive in the WASD direction to extend reach.
@@ -45,13 +52,16 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
 
 3.6. Controls (keyboard)
   - W A S D - Move
-  - Space - Action, by context. On the ground with the ball dropping toward you = pass: hold to charge (longer hold = higher pass), release to hit, WASD at release aims (no direction = straight up), and the character stands still while charging. Otherwise = Jump (spike approach, block at the net, jump serve).
+  - Space - Action, by context. Standing still (no WASD) on the ground with the ball dropping toward you = pass: hold to charge (longer hold = higher pass), release to hit, WASD at release aims (no direction = straight up), and the character stands still while charging. Otherwise = jump: hold to charge (longer hold = higher jump), release to take off, and the player keeps running while charging (spike approach, block at the net, jump serve).
+  - Left mouse click - Hit in the air (spike). WASD at the click aims.
   - K - Dive / Pancake
 
 3.7. Teammate
 The player's partner is a bot. Its first job is passing the ball back and forth with the player.
   - Who plays the ball: no double touches. After the player touches the ball, it belongs to the teammate, and after the teammate touches it, it belongs to the player. On a fresh ball, whoever is closer to the landing marker takes it.
-  - On its ball: the teammate runs to the landing marker with the same speed and acceleration as the player and passes as the ball drops to forearm height. Its pass is aimed at the player.
+  - On its ball: the teammate runs to the landing marker with the same speed and acceleration as the player and plays the ball as it drops to forearm height.
+      After the player's touch it sets: a high ball (tunable, about 5 m) to a spot about 1 m from the net in line with the player, so the player can approach and spike.
+      On a fresh ball it passes to the player, as before.
   - Off its ball: it walks back to a fixed home spot on its side of the court (tunable).
   - Skill: each touch rolls Perfect / Good / Miss with set odds (default 70 / 25 / 5) and uses the same power and accuracy penalties as the player's pass. A bad roll can shank the ball, and the player then has to chase it.
   - Player's pass assist: if the WASD direction at release points within about 45° of the teammate, the pass goes to the teammate's position. Otherwise it travels its normal distance in the WASD direction. Timing still decides accuracy.
