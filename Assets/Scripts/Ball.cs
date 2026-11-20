@@ -18,6 +18,9 @@ public class Ball : MonoBehaviour
     public Vector3 LandingPoint { get; private set; }
     public bool Dead { get; private set; }
 
+    /// <summary>Who touched the ball last, or null for a fresh ball.</summary>
+    public Transform LastTouch { get; private set; }
+
     float radius;
 
     void Start()
@@ -26,8 +29,37 @@ public class Ball : MonoBehaviour
         Respawn();
     }
 
-    /// <summary>Sends the ball off with a new velocity, as a touch does.</summary>
-    public void Hit(Vector3 velocity) => Velocity = velocity;
+    /// <summary>Sends the ball off with a new velocity, as a touch by <paramref name="by"/> does.</summary>
+    public void Hit(Vector3 velocity, Transform by)
+    {
+        Velocity = velocity;
+        LastTouch = by;
+    }
+
+    /// <summary>Pass: rises <paramref name="height"/> above the contact, travels about <paramref name="distance"/> along flat <paramref name="dir"/> (drag shortens it), tilted randomly by up to <paramref name="spread"/> degrees.</summary>
+    public void Pass(Transform by, Vector3 dir, float distance, float height, float spread)
+    {
+        float g = -Physics.gravity.y;
+        float vy = Mathf.Sqrt(2f * g * height);
+        Vector3 v = dir * (distance / (2f * vy / g)) + Vector3.up * vy;
+        Vector3 axis = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f) * Vector3.right;
+        Hit(Quaternion.AngleAxis(Random.Range(0f, spread), axis) * v, by);
+    }
+
+    /// <summary>True when <paramref name="who"/> plays the ball next: no double touches, and a fresh ball goes to whoever is closer to the landing point.</summary>
+    public bool TurnOf(Transform who, Transform partner)
+    {
+        if (LastTouch == partner) return true;
+        if (LastTouch == who) return false;
+        return FlatDistance(who) <= FlatDistance(partner);
+    }
+
+    float FlatDistance(Transform t)
+    {
+        Vector3 d = LandingPoint - t.position;
+        d.y = 0f;
+        return d.magnitude;
+    }
 
     void Update()
     {
@@ -75,6 +107,7 @@ public class Ball : MonoBehaviour
     void Respawn()
     {
         Dead = false;
+        LastTouch = null;
         Vector2 r = Random.insideUnitCircle * dropSpread;
         transform.position = new Vector3(player.position.x + r.x, dropHeight, player.position.z + r.y);
         Velocity = Vector3.zero;

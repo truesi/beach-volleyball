@@ -48,8 +48,16 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
   - Space - Action, by context. On the ground with the ball dropping toward you = pass: hold to charge (longer hold = higher pass), release to hit, WASD at release aims (no direction = straight up), and the character stands still while charging. Otherwise = Jump (spike approach, block at the net, jump serve).
   - K - Dive / Pancake
 
-3.7. Opponents
+3.7. Teammate
+The player's partner is a bot. Its first job is passing the ball back and forth with the player.
+  - Who plays the ball: no double touches. After the player touches the ball, it belongs to the teammate, and after the teammate touches it, it belongs to the player. On a fresh ball, whoever is closer to the landing marker takes it.
+  - On its ball: the teammate runs to the landing marker with the same speed and acceleration as the player and passes as the ball drops to forearm height. Its pass is aimed at the player.
+  - Off its ball: it walks back to a fixed home spot on its side of the court (tunable).
+  - Skill: each touch rolls Perfect / Good / Miss with set odds (default 70 / 25 / 5) and uses the same power and accuracy penalties as the player's pass. A bad roll can shank the ball, and the player then has to chase it.
+  - Player's pass assist: if the WASD direction at release points within about 45° of the teammate, the pass goes to the teammate's position. Otherwise it travels its normal distance in the WASD direction. Timing still decides accuracy.
+
+3.8. Opponents
 Computer bots use the same moves and timing windows as the player. Tournament opponents get harder by improving their timing accuracy, reaction speed and attack choice.
 
-3.8. Tournament
+3.9. Tournament
 A ladder of bot teams. Win a match to advance, lose and retry the match. Beat the final team to win the tournament.

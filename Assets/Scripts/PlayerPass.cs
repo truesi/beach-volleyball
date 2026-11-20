@@ -4,6 +4,8 @@ using UnityEngine.InputSystem;
 public class PlayerPass : MonoBehaviour
 {
     public Ball ball;
+    public Transform teammate;
+    public float assistAngle = 45f;
     public Vector3 contactOffset = new Vector3(0f, -0.25f, 0.7f);
     public float incomingRadius = 2.5f;
     public float reach = 1.5f;
@@ -39,7 +41,7 @@ public class PlayerPass : MonoBehaviour
     {
         Vector3 d = ball.LandingPoint - transform.position;
         d.y = 0f;
-        return !ball.Dead && ball.Velocity.y < 0f && d.magnitude <= incomingRadius;
+        return !ball.Dead && ball.Velocity.y < 0f && d.magnitude <= incomingRadius && ball.TurnOf(transform, teammate);
     }
 
     void Update()
@@ -49,8 +51,9 @@ public class PlayerPass : MonoBehaviour
         if (kb.spaceKey.wasPressedThisFrame && movement.Grounded && BallIncoming()) chargeStart = Time.time;
         if (chargeStart >= 0f && kb.spaceKey.wasReleasedThisFrame)
         {
-            Release(Mathf.Clamp01((Time.time - chargeStart) / maxChargeTime));
+            float charge = Charge01;
             chargeStart = -1f;
+            Release(charge);
         }
     }
 
@@ -72,11 +75,16 @@ public class PlayerPass : MonoBehaviour
         else if (t <= goodWindow) { Show(early > 0f ? "Good (early)" : "Good (late)"); power = goodPower; spread = goodSpread; }
         else { Show(early > 0f ? "Miss (shank, early)" : "Miss (shank, late)"); power = shankPower; spread = shankSpread; }
 
-        float g = -Physics.gravity.y;
-        float vy = Mathf.Sqrt(2f * g * Mathf.Lerp(minPassHeight, maxPassHeight, charge) * power);
-        Vector3 v = movement.InputDir * (passDistance / (2f * vy / g)) + Vector3.up * vy;
-        Vector3 axis = Quaternion.Euler(0f, Random.Range(0f, 360f), 0f) * Vector3.right;
-        ball.Hit(Quaternion.AngleAxis(Random.Range(0f, spread), axis) * v);
+        Vector3 dir = movement.InputDir;
+        float distance = passDistance;
+        Vector3 toMate = teammate.position - transform.position;
+        toMate.y = 0f;
+        if (dir != Vector3.zero && Vector3.Angle(dir, toMate) <= assistAngle)
+        {
+            dir = toMate.normalized;
+            distance = toMate.magnitude;
+        }
+        ball.Pass(transform, dir, distance, Mathf.Lerp(minPassHeight, maxPassHeight, charge) * power, spread);
     }
 
     void Show(string text)

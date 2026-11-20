@@ -91,12 +91,16 @@ Top-down view (the camera follows behind the player, looking toward +Z):
   hold-to-charge pass (locks the player in place while charging, `PlayerMovement` reads
   `Charging`), timing grade within `reach` 1.5 m, OnGUI charge bar above the head
   (green → yellow, red at full) + result text top-left.
+- [Assets/Scripts/TeammateBot.cs](Assets/Scripts/TeammateBot.cs) — on Teammate. Runs to the
+  landing marker on its turn (`Ball.TurnOf`: no double touch, fresh ball → closer one), passes
+  to the player at contact height with Perfect/Good/Miss odds, else walks to `home`. Borrows
+  speed/limits from the player's `PlayerMovement` and penalties/reach from `PlayerPass`.
 - [Assets/Scripts/CameraFollow.cs](Assets/Scripts/CameraFollow.cs) — on Main Camera. Keeps the
   scene's start offset to `target` and follows X/Z with `SmoothDamp`. Move the camera in the
   scene to change the offset. Also zooms FOV in while a pass charges (`chargeZoom`) and
   kicks out past normal on release (`releaseKick`), scaled by the charge.
 - [Assets/Materials/](Assets/Materials/) — URP/Lit placeholder materials: `Beach`,
-  `CourtSand`, `Net` (transparent), `Post`, `Player`, `Ball`.
+  `CourtSand`, `Net` (transparent), `Post`, `Player`, `Teammate`, `Ball`.
 - `Assets/Settings/` — URP pipeline assets (PC + Mobile renderers), volume profiles.
 - `Assets/InputSystem_Actions.inputactions` — Unity template asset, unused (scripts read
   `Keyboard.current` directly).
@@ -112,7 +116,8 @@ Court
  ├─ CourtSand        (8×16 court plane)
  ├─ Net              (translucent dark cube, spans y 1.6–2.4, x ±4.3)
  ├─ NetPostL / NetPostR (x ±4.6, height 2.6)
-Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass)
+Player               (blue capsule at (0, 1, -6), PlayerMovement, PlayerPass → Teammate)
+Teammate             (red capsule at (2, 1, -4), TeammateBot → Ball, Player)
 Ball                 (yellow sphere Ø0.42 visual, Ball → Player, LandingMarker)
 LandingMarker        (flat yellow disc, no collider, moved by Ball)
 ```
@@ -152,7 +157,10 @@ Next slices (rough order):
 1. ✅ **Timing-based ball** — real-physics flight, landing marker, Space hold-to-charge
    pass with Perfect/Good/Miss, charge bar, camera zoom (2026-11-20). Juggling is done.
    Net collision and ball spin still to do.
-2. **Bot teammate** — covers the open half, sets after your pass, goes to the net to block.
+2. 🟡 **Bot teammate** — passing built 2026-11-20, designed 2026-11-20 (GDD 3.7): alternate touches with the player
+   (no double touch), run to the landing marker, pass back to the player with Perfect/Good/Miss
+   odds, idle at a fixed home spot. The player's pass soft-assists toward the teammate within ~45°.
+   Later: sets after your pass, goes to the net to block.
 3. **Serve**, then **pass / set / spike** (3-touch rally).
 4. **Block, dig, dive & pancake.**
 5. **Enemy bot AI** — same moves and timing windows as the player.
