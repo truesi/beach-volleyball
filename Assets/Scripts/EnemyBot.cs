@@ -11,6 +11,7 @@ public class EnemyBot : MonoBehaviour
     public float setHeight = 5f;
     public float setNetGap = 1f;
     public float apexMargin = 0.3f;
+    public bool aimCenter = true;
     [Range(0f, 1f)] public float perfectOdds = 0.7f;
     [Range(0f, 1f)] public float goodOdds = 0.25f;
     public float labelY = 100f;
@@ -34,8 +35,9 @@ public class EnemyBot : MonoBehaviour
 
     void Update()
     {
-        bool mine = !ball.Dead && ball.LandingPoint.z > 0f && ball.TurnOf(transform, partner.transform);
-        bool attack = mine && ball.LastTouch == partner.transform && ball.Touches >= 2;
+        bool turn = !ball.Dead && ball.TurnOf(transform, partner.transform);
+        bool attack = turn && ball.LastTouch == partner.transform && ball.Touches == 2 && ball.transform.position.z > 0f;
+        bool mine = turn && ball.LandingPoint.z > 0f;
         if (Grounded) swung = false;
         Run(attack ? ApproachAndJump() : mine ? ball.LandingPoint : home);
         if (attack) TrySpike();
@@ -100,7 +102,7 @@ public class EnemyBot : MonoBehaviour
             return;
         }
 
-        Vector3 target = OpenSand();
+        Vector3 target = aimCenter ? new Vector3(0f, 0f, -player.midZ) : OpenSand();
         int grade = Roll("spike");
         if (grade == 2)
         {

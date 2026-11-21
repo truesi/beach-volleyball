@@ -1535,6 +1535,7 @@ MonoBehaviour:
   setHeight: 5
   setNetGap: 1
   apexMargin: 0.3
+  aimCenter: 1
   perfectOdds: 0.7
   goodOdds: 0.25
   labelY: 100
@@ -1650,6 +1651,7 @@ MonoBehaviour:
   setHeight: 5
   setNetGap: 1
   apexMargin: 0.3
+  aimCenter: 1
   perfectOdds: 0.7
   goodOdds: 0.25
   labelY: 140
@@ -1671,10 +1673,7 @@ MonoBehaviour:
   hitboxSize: {x: 1, y: 1, z: 0.6}
   hitboxOffset: {x: 0, y: 1.2, z: 0.3}
   sideShift: 0.5
-  stuffSpeed: 10
-  deflectHeight: 3
-  deflectDistance: 2
-  missSpeed: 0.6
+  rebound: 0.6
 --- !u!1 &1700000084
 GameObject:
   m_ObjectHideFlags: 0

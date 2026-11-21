@@ -49,10 +49,7 @@ Every action has a timing window: Perfect / Good / Miss. Perfect gives the best 
       Same Space jump as the spike: hold to charge, longer hold = higher jump, release to take off. It is a block jump when you take off within about 1.5 m of the net while the enemies have the ball (their touch was last). Otherwise it is the normal spike jump.
       In a block jump the body goes straight up (no air drift). The hands are a hitbox about 1 m wide and 1 m tall above the shoulders. No direction key = centered on the player; holding A or D slides it about 0.5 m left or right. Left click does nothing in a block jump.
       Jump height decides which spikes you can reach, so read the hitter: a deep spike crosses the net high, a short one low.
-      The block is graded by how close to the top of your jump the ball hits the hands (same Perfect / Good windows as the pass):
-        Perfect = stuff block, the ball is driven down into the enemy court.
-        Good = soft deflection up on your side; the teammate then sets it for you.
-        Miss = the ball tips off the hands and keeps going, slowed.
+      Any ball that hits the hands bounces back to the enemy side (for now, 2026-11-21: no timing grade). Rebound speed and ball weight will be tuned later.
       A block touch counts as your side's first touch (beach rules).
   - Defence / Dig - receive a hard spike with a timed bump. Harder to time than a normal pass.
   - Dive - when the ball lands out of reach, dive in the WASD direction to extend reach.

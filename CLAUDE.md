@@ -104,8 +104,8 @@ Top-down view (the camera follows behind the player, looking toward +Z):
 - [Assets/Scripts/PlayerBlock.cs](Assets/Scripts/PlayerBlock.cs) — on Player. A jump that takes off
   within `netRange` of the net while the enemies touched last is a block (`Blocking`): `PlayerMovement`
   drops air drift, `PlayerSpike` ignores left click, A/D shift the hands hitbox by `sideShift`. Ball
-  inside the hitbox (moving toward us) is graded by time from the jump peak with the pass windows:
-  Perfect = stuff down into the enemy court, Good = deflect up on our side, Miss = tip, slowed.
+  path crossing the hitbox (swept per frame, moving toward us) rebounds: z velocity mirrored back to the
+  enemy side, scaled by `rebound`. No timing grade for now (user's call 2026-11-21).
   Shows the hitbox with the `BlockHitbox` cube while blocking.
 - [Assets/Scripts/TeammateBot.cs](Assets/Scripts/TeammateBot.cs) — on Teammate. Runs to the
   landing marker on its turn (`Ball.TurnOf`: no double touch, fresh ball → closer one), at
@@ -116,7 +116,8 @@ Top-down view (the camera follows behind the player, looking toward +Z):
 - [Assets/Scripts/EnemyBot.cs](Assets/Scripts/EnemyBot.cs) — on EnemyA / EnemyB. Mirror of our
   team on the +Z side (GDD 3.8): dig to partner (fresh ball, closer bot), set near the net
   (`Ball.Touches` = 1, aimed so the set *peaks* `setNetGap` off the net), spike (`Ball.Touches` = 2) by jumping so the hand peaks `apexMargin` under the
-  set's apex, aimed at the open-sand target farthest from player + teammate. Perfect/Good/Miss odds,
+  set's apex, aimed at the center of our half (`aimCenter`, on for block testing) or else the open-sand
+  target farthest from player + teammate. The spiker plays the set even though it would land on our side. Perfect/Good/Miss odds,
   walks to `home` off the ball. Borrows speed/jump/limits from `PlayerMovement`, spike tuning from
   `PlayerSpike`, penalties/reach from `PlayerPass`. Results drawn at `labelY`.
 - [Assets/Scripts/CameraFollow.cs](Assets/Scripts/CameraFollow.cs) — on Main Camera. Keeps the
